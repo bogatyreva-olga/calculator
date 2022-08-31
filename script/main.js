@@ -9,23 +9,22 @@ class Buttons {
     constructor(buttonsElement, display) {
         this._display = display;
         this._buttonsElement = buttonsElement;
-        this.init();
+        this._init();
     }
 
-    init() {
+    _init() {
         this._buttonsElement.querySelectorAll('.btn-to-display-js').forEach((item) => {
             item.addEventListener('click', (e) => {
-                this.inputSymbol(e.target.textContent)
+                this._inputSymbol(e.target.textContent)
             })
         })
-        this._buttonsElement.querySelector('.btn-clear-js').addEventListener('click', () => {
-            this._display.clear();
-        })
+
+        this._buttonsElement.querySelector('.btn-clear-js').addEventListener('click', this._display.clear.bind(this._display))
     }
 
-    inputSymbol(symbol) {
+    _inputSymbol(symbol) {
         if (symbol.match(/\d/)) {
-            this._display.addTo(symbol);
+            this._display.addToEnd(symbol);
             return;
         }
         if (symbol === '.') {
@@ -36,10 +35,34 @@ class Buttons {
             if (this._display.getLastNumber().indexOf('.') !== -1) {
                 return;
             }
-            this._display.addTo(symbol);
+            this._display.addToEnd(symbol);
             return;
         }
-        this._display.addTo(symbol);
+
+        if (['/', '*', '+', '%'].includes(symbol) && this._display.getLastSymbol().length === 0) {
+            return;
+        }
+
+        if (this._display.getLastSymbol() === symbol) {
+            return;
+        }
+
+        if (['/', '*'].includes(this._display.getLastSymbol()) && symbol === '-') {
+            this._display.addToEnd(symbol);
+            return;
+        }
+
+        if (['/', '*', '+'].includes(this._display.getLastSymbol()) && ['/', '*', '+', '-'].includes(symbol)) {
+            this._display.deleteLastSymbol();
+            this._display.addToEnd(symbol);
+            return;
+        }
+
+        if (this._display.getLastSymbol() === '-') {
+            return;
+        }
+
+        this._display.addToEnd(symbol);
     }
 }
 
@@ -48,7 +71,7 @@ class Display {
         this._display = displayElement;
     }
 
-    addTo(symbol) {
+    addToEnd(symbol) {
         this._display.textContent += symbol;
     }
 
@@ -57,7 +80,10 @@ class Display {
     }
 
     getLastSymbol() {
-        return this._display.textContent[this._display.textContent.length - 1]
+        if (this._display.textContent.length === 0) {
+            return '';
+        }
+        return this._display.textContent[this._display.textContent.length - 1];
     }
 
     getLastNumber() {
@@ -66,6 +92,10 @@ class Display {
             return '';
         }
         return search[0];
+    }
+
+    deleteLastSymbol() {
+        this._display.textContent = this._display.textContent.slice(0, -1);
     }
 }
 
