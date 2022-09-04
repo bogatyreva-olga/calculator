@@ -1,14 +1,16 @@
 class Calculator {
     constructor(calc) {
         this._display = new Display(calc.querySelector('.calc-display'));
-        this._buttons = new Buttons(calc.querySelector('.buttons'), this._display);
+        this._result = new Result(this._display);
+        this._buttons = new Buttons(calc.querySelector('.buttons'), this._display, this._result);
     }
 }
 
 class Buttons {
-    constructor(buttonsElement, display) {
+    constructor(buttonsElement, display, result) {
         this._display = display;
         this._buttonsElement = buttonsElement;
+        this._result = result;
         this._init();
     }
 
@@ -19,7 +21,13 @@ class Buttons {
             })
         })
 
-        this._buttonsElement.querySelector('.btn-clear-js').addEventListener('click', this._display.clear.bind(this._display))
+        this._buttonsElement.querySelector('.btn-clear-js').addEventListener('click', this._display.clear.bind(this._display));
+        this._buttonsElement.querySelector('.btn-ce-js').addEventListener('click', this._display.deleteLastSymbol.bind(this._display));
+        this._buttonsElement.querySelector('.btn-result-js').addEventListener('click', () => {
+            let result = this._result.getCalculateResult();
+            this._display.clear();
+            this._display.addToEnd(result);
+        });
     }
 
     _inputSymbol(symbol) {
@@ -96,6 +104,20 @@ class Display {
 
     deleteLastSymbol() {
         this._display.textContent = this._display.textContent.slice(0, -1);
+    }
+
+    getAllData() {
+        return this._display.textContent;
+    }
+}
+
+class Result {
+    constructor(display) {
+        this._display = display;
+    }
+
+    getCalculateResult() {
+        return eval(this._display.getAllData());
     }
 }
 
